@@ -8,6 +8,11 @@ delete_summary_node_ids = [];
 current_summarize_d_id = [];
 
 var article_url = getParameterByName('article');
+var exposed_replies = true; //variable to determine the exposure of the children_reply nodes
+var expanded = true; //variable to determine whether a node is fully expanded or collapsed.
+var replies_dict = {};
+var summaries_dict = {};
+
 
 function highlight_sents() {
 	d_ids = current_summarize_d_id;
@@ -108,7 +113,7 @@ function check_button_checkbox() {
 
             // Inject the icon if applicable
             if ($button.find('.state-icon').length == 0) {
-                $button.prepend('<i class="state-icon ' + settings[$button.data('state')].icon + '"></i> ');
+                $button.prepend('<i class="state-icon ' + settings[$button.data('state')].icon + '"></i> ');
             }
         }
         init();
@@ -2144,6 +2149,31 @@ function expand_all(id) {
 	update(d);
 }
 
+function collapse_all(id) { //new method
+	d = nodes_all[id-1];
+	recurse_collapse_all(d);
+	update(d);
+}
+
+function recurse_collapse_all(d){ //new method
+	if(d.replace_node) {
+		if(!d.children) {
+			d.children = [];
+		}
+		for(var i = 0; i < d.children.length; i++) {
+			d.replace.push(d.children[i]);
+		}
+
+		d.children = []
+	}
+
+	if(d.children) {
+		for (var i=0; i<d.children.length; i++) {
+			recurse_collapse_all(d.children[i]);
+		}
+	}
+}
+
 function dragend(d) {
  	if (d.article || d.parent_node) {
         return;
@@ -2420,7 +2450,7 @@ function update(source) {
 	      	}
 
       })
-      .on("mouseover", showdiv)
+      .on("mouseover", showdiv) //maybe add a .on("mouseclick", showdiv) here?
       .on("mouseout", hidediv)
       .call(node_drag);
 
@@ -2554,7 +2584,7 @@ function recurse_hide_node(d) {
 	}
 }
 
-// Toggle children on click.
+//Toggle children on click.
 function click_node(id) {
   d = nodes_all[id-1];
 
@@ -2562,9 +2592,25 @@ function click_node(id) {
 	recurse_hide_node(d);
     d._children = d.children;
     d.children = null;
+
+    // if(expanded == true){
+    // 	expanded = false;
+    // }
+    // else if(expanded == false){
+    // 	expanded = true;
+    // }
+
   } else {
     d.children = d._children;
     d._children = null;
+
+    // if(expanded == false){ 
+    // 	expanded = true;
+    // }
+    // else if(expanded == true){
+    // 	expanded = false;
+    // }
+
   }
 
   update(d);
@@ -3008,18 +3054,97 @@ function set_expand_position(d) {
 		left: offset.left + d.y + ((d.size + 100)/60) - width + 10 - node_width});
 }
 
+// function hasExpandableSummaries(d) {
+// 	for(i=0;i<d.children.length; i++){
+// 		if(d.children[i].replace_node){
+// 			return true;
+// 			break;
+// 		}
+// 	}
+// 	return false;
+// }
+
+// function hasCollapsableSummaries(d) {
+// 	for(i=0;i<d.children.length; i++){
+// 		if(d.children[i].replace_node){
+// 			return true;
+// 			break;
+// 		}
+// 	}
+// 	return false;
+// }
+function replyCollapser(d) {
+	collapse_node(d.id); 
+	replies_dict[d.d_id]=false; 
+
+	console.log(replies_dict[d.d_id]); 
+	console.log(replies_dict);
+
+	document.getElementById("replyExpand").innerHTML = "Expand replies";
+}
+
+function replyExpander(d) {
+	expand_node(d.id); 
+	replies_dict[d.d_id]=true; 
+
+	console.log(replies_dict[d.d_id]); 
+	console.log(replies_dict);
+
+	document.getElementById("replyCollapse").innerHTML = "Collapse replies";
+}
+
+
+
+
 function showdiv(d) {
+	//var exposed_replies = true; //variable to determine the exposure of the children
 	if (!isMouseDown) {
 		if (d.replace_node) {
 			clearTimeout(timer);
 
 			text = '';
+			//console.log(replies_dict.length);
+
 			if (comment_id != d.d_id) {
 				if (text != '') {
 					text += '<BR>';
 				}
+
+				if(!(d.d_id in summaries_dict)) {
+						summaries_dict[d.d_id] = false;
+				}
+
 				text += '<a href="/subtree?article=' + article_url + '&comment_id=' + d.d_id + '&num=' + num + '">See Isolated Subtree</a>';
-				text += '<BR><a onclick="expand_all(' + d.id + ')">Expand all Summaries</a>';
+				
+				// console.log(d.children);
+				// console.log(d.replace);
+				if(d.replace.length > 0){ //expand all summaries
+					text += '<BR><a onclick="expand_all(' + d.id + '); summaries_dict[d.d_id] = true; showdiv(d)">Expand all Summaries</a>';
+				}
+
+				if(d.replace.length == 0) {
+					text += '<BR><a onclick="collapse_all(' + d.id+ '); summaries_dict[d.d_id] = false; showdiv(d)">Collapse all Summaries</a>';
+				}
+
+				// else if(summaries_dict[d.d_id]) { //collapse all summaries
+				// 	text += '<BR><a onclick="collapse_allf(' + d.id + '); summaries_dict[d.d_id] = false; console.log(summaries_dict[d.d_id]);">Collapse all Summaries</a>';
+				// }
+
+
+				// console.log(typeof d.children == undefined);
+				// //console.log(hasCollapsableSummaries(d));
+				// if(typeof d.children != 'undefined'){
+				// 	for(i=0;i<d.children.length; i++){
+				// 		if(d.children[i].replace_node){
+				// 			console.log("found collapsable children");
+				// 			text += '<BR><a onclick="expand_all(' + d.id + ')">Collapse all Summaries</a>';
+				// 			break;
+				// 		}
+				// 	}
+				// }
+
+				//Insert code to collapse all summaries
+				//text += '<BR><a onclick="expand_all(' + d.id + ')">Expand all Summaries</a>'; //Needs to be EDITED to enable Collapse all summaries
 			}
 			if (text != '') {
 				$('#expand').html(text);
@@ -3051,11 +3176,28 @@ function showdiv(d) {
 			}
 
 
-			if (one_depth) {
+			if (one_depth) { //checks to see whether or not node is at the bottom of the branch.
 				text = '';
 			} else {
 				if (!d.parent_node) {
-					text = '<a onclick="collapse_node(' + d.id + ');">Collapse replies</a><BR><a onclick="expand_node(' + d.id + ');">Expand replies</a>';
+					if(!(d.d_id in replies_dict)) {
+						replies_dict[d.d_id] = true;
+					}
+
+					text= '';
+					if (replies_dict[d.d_id] == true){ //conditionals for determining onclick options for the hover box 
+						
+						text += '<a id="replyCollapse" onclick="collapse_node(' + d.id + '); replies_dict[d.d_id]=false; showdiv(d);">Collapse replies</a>'; //text.getElementById('replyCollapse').innerHTML = 'Collapse replies';
+						// text += '<a id="replyCollapse" onclick="replyCollapser(' + d + ');">Collapse replies</a>';
+						//Try adding onclick="dictionary changes; showdiv();"
+					}
+
+					if (replies_dict[d.d_id] == false){ 
+						
+						text += '<a id="replyExpand" onclick="expand_node(' + d.id + '); replies_dict[d.d_id]=true; showdiv(d);">Expand replies</a>'; //text.getElementById('replyExpand').innerHTML = 'Collapse replies';
+						// text += '<a id="replyExpand" onclick="replyExpander(' + d + ');">Expand replies</a>';
+						 
+					}
 				} else {
 					text = '';
 				}
@@ -3073,7 +3215,14 @@ function showdiv(d) {
 
 				}
 			}
-			text += '<BR><a onclick="expand_all(' + d.id + ')">Expand all Summaries</a>';
+			if(d.replace.length > 0){ //expand all summaries
+				text += '<BR><a onclick="expand_all(' + d.id + '); summaries_dict[d.d_id] = true; showdiv(d)">Expand all Summaries</a>';
+			}
+
+			//ask if collapse all summaries needs to be enabled for replies
+			// if(d.replace.length == 0) { 
+			// 	text += '<BR><a onclick="collapse_all(' + d.id+ '); summaries_dict[d.d_id] = false; console.log(summaries_dict[d.d_id]);">Collapse all Summaries</a>';
+			// }
 
 			if (text != '') {
 				$('#expand').html(text);
@@ -3086,7 +3235,7 @@ function showdiv(d) {
 			set_expand_position(d);
 		}
 
-		if (d3.select(this).classed("clicked")) {
+		if (d3.select(this).classed("clicked")) { //isn't this conditional already redrawing the box every time the node is clicked?
 			extra_highlight_node(d.id);
 			highlight_box(d.id);
 			hover_timer = window.setTimeout(function(d) {
@@ -3139,7 +3288,7 @@ function show_replace_nodes(id) {
 	text = '';
 	if (comment_id != d.d_id) {
 		text += '<a href="/subtree?article=' + article_url + '&comment_id=' + d.d_id + '&num=' + num + '">See Isolated Subtree</a>';
-		text += '<BR><a onclick="expand_all(' + d.id + ')">Expand all Summaries</a>';
+		text += '<BR><a onclick="expand_all(' + d.id + ')">Collapse all Summaries</a>';
 	}
 	if (text != '') {
 		$('#expand').html(text);
