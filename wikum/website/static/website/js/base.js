@@ -3117,8 +3117,7 @@ function showdiv(d) {
 
 				text += '<a href="/subtree?article=' + article_url + '&comment_id=' + d.d_id + '&num=' + num + '">See Isolated Subtree</a>';
 				
-				// console.log(d.children);
-				// console.log(d.replace);
+				
 				if(d.replace.length > 0){ //expand all summaries
 					text += '<BR><a onclick="expand_all(' + d.id + '); summaries_dict[d.d_id] = true; showdiv(d)">Expand all Summaries</a>';
 				}
@@ -3127,25 +3126,7 @@ function showdiv(d) {
 					text += '<BR><a onclick="collapse_all(' + d.id+ '); summaries_dict[d.d_id] = false; showdiv(d)">Collapse all Summaries</a>';
 				}
 
-				// else if(summaries_dict[d.d_id]) { //collapse all summaries
-				// 	text += '<BR><a onclick="collapse_allf(' + d.id + '); summaries_dict[d.d_id] = false; console.log(summaries_dict[d.d_id]);">Collapse all Summaries</a>';
-				// }
-
-
-				// console.log(typeof d.children == undefined);
-				// //console.log(hasCollapsableSummaries(d));
-				// if(typeof d.children != 'undefined'){
-				// 	for(i=0;i<d.children.length; i++){
-				// 		if(d.children[i].replace_node){
-				// 			console.log("found collapsable children");
-				// 			text += '<BR><a onclick="expand_all(' + d.id + ')">Collapse all Summaries</a>';
-				// 			break;
-				// 		}
-				// 	}
-				// }
-
-				//Insert code to collapse all summaries
-				//text += '<BR><a onclick="expand_all(' + d.id + ')">Expand all Summaries</a>'; //Needs to be EDITED to enable Collapse all summaries
+				
 			}
 			if (text != '') {
 				$('#expand').html(text);
@@ -3220,10 +3201,6 @@ function showdiv(d) {
 				text += '<BR><a onclick="expand_all(' + d.id + '); summaries_dict[d.d_id] = true; showdiv(d)">Expand all Summaries</a>';
 			}
 
-			//ask if collapse all summaries needs to be enabled for replies
-			// if(d.replace.length == 0) { 
-			// 	text += '<BR><a onclick="collapse_all(' + d.id+ '); summaries_dict[d.d_id] = false; console.log(summaries_dict[d.d_id]);">Collapse all Summaries</a>';
-			// }
 
 			if (text != '') {
 				$('#expand').html(text);
