@@ -1893,7 +1893,7 @@ function delete_children_boxes(node) {
 	}
 }
 
-function success_noty() {
+function success_noty() { //triggered when a successful change is made
 	noty({
 	    text: 'Your change is saved!',
 	    layout: 'topCenter',
@@ -1910,7 +1910,7 @@ function success_noty() {
 	});
 }
 
-function error_noty() {
+function error_noty() { //triggered when 
 	noty({
 	    text: 'Sorry, an error occurred.',
 	    layout: 'topCenter',
@@ -1926,6 +1926,7 @@ function error_noty() {
 	    }
 	});
 }
+
 
 function make_filter() {
 	text = '<div id="filter_typeahead"><input required class="typeahead form-control input-sm" id="inputFilter" placeholder="Filter by tag"></div>';
@@ -3235,7 +3236,7 @@ function showdiv(d) {
 			set_expand_position(d);
 		}
 
-		if (d3.select(this).classed("clicked")) { //isn't this conditional already redrawing the box every time the node is clicked?
+		if (d3.select(this).classed("clicked")) {
 			extra_highlight_node(d.id);
 			highlight_box(d.id);
 			hover_timer = window.setTimeout(function(d) {
